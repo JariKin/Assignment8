@@ -1,11 +1,14 @@
 package com.example.t7_picture_listview;
 
 import androidx.appcompat.app.AppCompatActivity;
-
+import androidx.room.Room;
+import android.util.Log;
+import android.app.Application;
 import android.content.Context;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.Network;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -24,9 +27,13 @@ import com.google.gson.Gson;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.ArrayList;
+import java.util.List;
+
 
 public class MainActivity extends AppCompatActivity {
 
+
+    Tietokanta db;
     private ConnectivityManager cm;
     private Context context;
     private RequestQueue queue = null;
@@ -43,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
         adapter = new ownAdapter(this, R.layout.listtemplate, lista);
         ListView listview = findViewById(R.id.listView);
         listview.setAdapter(adapter);
+        db = Room.databaseBuilder(getApplicationContext(),
+                Tietokanta.class, "TIETOKANTA").build();
 
         searchButton = new Button(this);
         searchText = new EditText(this);
@@ -79,7 +88,9 @@ public class MainActivity extends AppCompatActivity {
         if(!testInternet(context)) {
             Toast.makeText(context, "No network available.", Toast.LENGTH_SHORT).show();
         }
+
     }
+
     private void doJsonQuery(String tag) {
         if (queue == null) {
             queue = Volley.newRequestQueue(this);
@@ -105,8 +116,10 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(MainActivity.this, "Error fetching data: " + error.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
+
         queue.add(jsonObjectRequest);
     }
+
     public void getDataFromResponse (JSONObject response) throws JSONException {
 
         Gson gson = new Gson();
@@ -125,5 +138,49 @@ public class MainActivity extends AppCompatActivity {
         cm = (ConnectivityManager) context.getSystemService(CONNECTIVITY_SERVICE);
         allNetworks = cm.getAllNetworks();
         return (allNetworks != null);
+    }
+
+    private class InsertTask extends AsyncTask<Picture,Integer,Integer> {
+
+        @Override
+        protected Integer doInBackground(Picture... entity) {
+            db.myTableDao().InsertMyentity(entity);
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected void onPostExecute(Integer result) {
+            super.onPostExecute(result);
+            Log.d("InsertTask","One Row Inserted");
+
+            SelectAsyncTask selectAsyncTask=new SelectAsyncTask();
+            selectAsyncTask.execute();
+        }
+    }
+
+    private class SelectAsyncTask extends AsyncTask<Void,Integer,List<Picture>> {
+
+        @Override
+        protected List<Picture> doInBackground(Void... voids) {
+            return db.myTableDao().getAllInDescendingOrder();
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected void onPostExecute(List<Picture> profileEntities) {
+            super.onPostExecute(profileEntities);
+           // Log.d("Select",Picture.size()+" row found");
+            adapter.setData(profileEntities);
+            adapter.notifyDataSetChanged();
+        }
     }
 }

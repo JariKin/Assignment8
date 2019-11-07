@@ -1,8 +1,17 @@
 package com.example.t7_picture_listview;
 
+import androidx.annotation.NonNull;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
 import com.google.gson.annotations.SerializedName;
 
+@Entity
 public class Picture {
+
+    @PrimaryKey(autoGenerate = true)
+    @NonNull
+    public int ID;
 
     @SerializedName("file")
     private String url;
@@ -38,6 +47,15 @@ public class Picture {
         this.filter = filter;
         this.tags = tags;
         this.tagMode = tagMode;
+    }
+
+    @NonNull
+    public int getID() {
+        return ID;
+    }
+
+    public void setID(@NonNull int ID) {
+        this.ID = ID;
     }
 
     public String getTagMode() {
