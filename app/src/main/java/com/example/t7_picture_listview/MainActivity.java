@@ -30,6 +30,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+/*
+EN SAANUT TOIMIMAAN, MUTTA YRITIN KAIKENNÄKÖISTÄ + ASYNCTASKIA YMS
+ */
+
+
 public class MainActivity extends AppCompatActivity {
 
 
